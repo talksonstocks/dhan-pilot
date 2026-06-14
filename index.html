@@ -94,9 +94,6 @@
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm text-gray-500 dark:text-gray-400">
                 &copy; 2026 Dhan Pilot. All rights reserved.<br>
-                <br><br>
-<a href="privacy-policy.html">Privacy Policy</a> |
-<a href="terms-and-conditions.html">Terms & Conditions</a>
                 <span class="text-xs font-semibold mt-2 block text-gray-400">Disclaimer: Results are estimates only and should not be considered strict financial advice. Actual returns, taxes, and bank rules may vary.</span>
             </p>
         </div>
@@ -106,6 +103,7 @@
         const formatINR = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Math.round(val));
         let chartInstance = null;
 
+        // BUG FIX: The `assumptions` text has been moved from the inner `calculate()` return object to the root calculator object so `${calc.assumptions}` correctly resolves.
         const appData = {
             categories: [
                 { id: 'loans', icon: '🏠', title: '1. Loans' },
@@ -123,6 +121,7 @@
                 // --- 1. LOANS ---
                 'homeloan': {
                     id: 'homeloan', category: 'loans', title: 'Home Loan EMI', desc: 'Calculate Equated Monthly Installment for Home Loans.',
+                    assumptions: "EMI calculated on reducing balance basis.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 50000000, step: 100000, value: 5000000, prefix: '₹' },
                         { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 8.5, suffix: '%' },
@@ -132,11 +131,12 @@
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
                         const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "EMI calculated on reducing balance basis." };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'carloan': {
                     id: 'carloan', category: 'loans', title: 'Car Loan EMI', desc: 'Shorter tenure, different rate loan calculator.',
+                    assumptions: "Standard reducing balance EMI.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 50000, value: 800000, prefix: '₹' },
                         { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 9.5, suffix: '%' },
@@ -145,11 +145,12 @@
                     calculate: (inp) => {
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
                         const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: (emi*n) - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, (emi*n) - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Standard reducing balance EMI." };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: (emi*n) - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, (emi*n) - P], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'personalloan': {
                     id: 'personalloan', category: 'loans', title: 'Personal Loan EMI', desc: 'Calculate EMI for short-term unsecured personal loans.',
+                    assumptions: "Standard reducing balance EMI calculation.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 10000, value: 500000, prefix: '₹' },
                         { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 14, suffix: '%' },
@@ -159,11 +160,12 @@
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
                         const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Standard reducing balance EMI calculation." };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'eduloan': {
                     id: 'eduloan', category: 'loans', title: 'Education Loan EMI', desc: 'Calculate EMI for educational loans.',
+                    assumptions: "Assumes EMI starts immediately. Does not account for moratorium periods.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 20000000, step: 50000, value: 1500000, prefix: '₹' },
                         { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 20, step: 0.1, value: 9.5, suffix: '%' },
@@ -173,13 +175,14 @@
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
                         const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Assumes EMI starts immediately. Does not account for moratorium periods." };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
 
                 // --- 2. INVESTMENTS & MF ---
                 'sip': {
                     id: 'sip', category: 'investments', title: 'SIP Calculator', desc: 'Calculate returns on monthly mutual fund investments.',
+                    assumptions: "Compounding monthly at the beginning of each month.",
                     inputs: [
                         { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
                         { id: 'rate', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
@@ -189,11 +192,12 @@
                         const P = inp.amt; const i = inp.rate / 12 / 100; const n = inp.yr * 12;
                         const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
                         const invested = P * n;
-                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: invested }, { label: 'Est. Returns', value: FV - invested } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounding monthly at the beginning of each month." };
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: invested }, { label: 'Est. Returns', value: FV - invested } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'stepupsip': {
                     id: 'stepupsip', category: 'investments', title: 'Step-up SIP', desc: 'Increase your SIP amount every year.',
+                    assumptions: "Calculates monthly compounding. Investment increases annually by the step-up percentage.",
                     inputs: [
                         { id: 'amt', label: 'Starting Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
                         { id: 'step', label: 'Annual Step-up', type: 'range', min: 1, max: 50, step: 1, value: 10, suffix: '%' },
@@ -210,11 +214,12 @@
                             }
                             mInv += mInv * (inp.step/100); // Step up occurs at year end
                         }
-                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: totalInv }, { label: 'Est. Returns', value: FV - totalInv } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [totalInv, Math.max(0, FV - totalInv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Calculates monthly compounding. Investment increases annually by the step-up percentage." };
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: totalInv }, { label: 'Est. Returns', value: FV - totalInv } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [totalInv, Math.max(0, FV - totalInv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'lumpsum': {
                     id: 'lumpsum', category: 'investments', title: 'Lumpsum Calculator', desc: 'Calculate returns for a one-time mutual fund investment.',
+                    assumptions: "Compounded annually.",
                     inputs: [
                         { id: 'p', label: 'Total Investment', type: 'range', min: 1000, max: 10000000, step: 1000, value: 100000, prefix: '₹' },
                         { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
@@ -222,11 +227,12 @@
                     ],
                     calculate: (inp) => {
                         const A = inp.p * Math.pow(1 + (inp.r / 100), inp.t);
-                        return { primaryOutput: { label: 'Estimated Wealth', value: A }, secondaryOutputs: [ { label: 'Invested Amount', value: inp.p }, { label: 'Est. Returns', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounded annually." };
+                        return { primaryOutput: { label: 'Estimated Wealth', value: A }, secondaryOutputs: [ { label: 'Invested Amount', value: inp.p }, { label: 'Est. Returns', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'swp': {
                     id: 'swp', category: 'investments', title: 'SWP Calculator', desc: 'Systematic Withdrawal Plan: Withdraw a fixed amount monthly.',
+                    assumptions: "Assumes withdrawals are made at the end of each month after applying growth.",
                     inputs: [
                         { id: 'p', label: 'Total Investment', type: 'range', min: 100000, max: 50000000, step: 50000, value: 5000000, prefix: '₹' },
                         { id: 'w', label: 'Monthly Withdrawal', type: 'range', min: 1000, max: 500000, step: 1000, value: 25000, prefix: '₹' },
@@ -247,11 +253,12 @@
                                 break; 
                             }
                         }
-                        return { primaryOutput: { label: 'Final Balance', value: balance }, secondaryOutputs: [ { label: 'Total Invested', value: inp.p }, { label: 'Total Withdrawn', value: totalWithdrawn } ], chart: { type: 'doughnut', labels: ['Final Balance', 'Total Withdrawn'], data: [balance, totalWithdrawn], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Assumes withdrawals are made at the end of each month after applying growth." };
+                        return { primaryOutput: { label: 'Final Balance', value: balance }, secondaryOutputs: [ { label: 'Total Invested', value: inp.p }, { label: 'Total Withdrawn', value: totalWithdrawn } ], chart: { type: 'doughnut', labels: ['Final Balance', 'Total Withdrawn'], data: [balance, totalWithdrawn], colors: ['#93c5fd', '#f59e0b'] } };
                     }
                 },
                 'goalsip': {
                     id: 'goalsip', category: 'investments', title: 'Goal SIP', desc: 'Find out how much to invest monthly to reach a target.',
+                    assumptions: "Compounding monthly at the beginning of each month.",
                     inputs: [
                         { id: 'fv', label: 'Target Amount', type: 'range', min: 100000, max: 100000000, step: 100000, value: 10000000, prefix: '₹' },
                         { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
@@ -261,11 +268,12 @@
                         const i = inp.r / 12 / 100; const n = inp.t * 12; let sip = 0;
                         if(i > 0 && n > 0) sip = inp.fv / ( ((Math.pow(1+i, n) - 1)/i) * (1+i) );
                         const totalInv = sip * n;
-                        return { primaryOutput: { label: 'Required Monthly SIP', value: sip }, secondaryOutputs: [ { label: 'Target Amount', value: inp.fv }, { label: 'Total Investment', value: totalInv } ], chart: { type: 'doughnut', labels: ['Total Investment', 'Est. Returns'], data: [totalInv, Math.max(0, inp.fv - totalInv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounding monthly at the beginning of each month." };
+                        return { primaryOutput: { label: 'Required Monthly SIP', value: sip }, secondaryOutputs: [ { label: 'Target Amount', value: inp.fv }, { label: 'Total Investment', value: totalInv } ], chart: { type: 'doughnut', labels: ['Total Investment', 'Est. Returns'], data: [totalInv, Math.max(0, inp.fv - totalInv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'xirr': {
                     id: 'xirr', category: 'investments', title: 'SIP Return Estimator', desc: 'Estimate the annualized return rate of your ongoing SIP.',
+                    assumptions: "A binary search approximation of IRR assuming consistent regular monthly investments.",
                     inputs: [
                         { id: 'sip', label: 'Monthly Investment', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
                         { id: 't', label: 'Months Invested', type: 'range', min: 6, max: 360, step: 1, value: 60, suffix: 'Mo' },
@@ -282,13 +290,14 @@
                             iter++; xirr = mid;
                         }
                         const invested = P * n;
-                        return { primaryOutput: { label: 'Est. Annual Return', value: xirr }, secondaryOutputs: [ { label: 'Total Invested', value: invested }, { label: 'Absolute Profit', value: Math.max(0, FV - invested) } ], chart: { type: 'doughnut', labels: ['Invested', 'Profit'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] }, assumptions: "A binary search approximation of IRR assuming consistent regular monthly investments." };
+                        return { primaryOutput: { label: 'Est. Annual Return', value: xirr }, secondaryOutputs: [ { label: 'Total Invested', value: invested }, { label: 'Absolute Profit', value: Math.max(0, FV - invested) } ], chart: { type: 'doughnut', labels: ['Invested', 'Profit'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
 
                 // --- 3. FIXED INCOME ---
                 'fd': {
                     id: 'fd', category: 'fixed', title: 'FD Calculator', desc: 'Bank Fixed Deposit with quarterly compounding.',
+                    assumptions: "Indian FDs standardly compound quarterly.",
                     inputs: [
                         { id: 'p', label: 'Total Investment', type: 'range', min: 5000, max: 10000000, step: 5000, value: 100000, prefix: '₹' },
                         { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 15, step: 0.1, value: 7.0, suffix: '%' },
@@ -296,11 +305,12 @@
                     ],
                     calculate: (inp) => {
                         const A = inp.p * Math.pow(1 + (inp.r/400), 4*inp.t);
-                        return { primaryOutput: { label: 'Maturity Amount', value: A }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest Earned', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Principal', 'Interest'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Indian FDs standardly compound quarterly." };
+                        return { primaryOutput: { label: 'Maturity Amount', value: A }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest Earned', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Principal', 'Interest'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'ppf': {
                     id: 'ppf', category: 'fixed', title: 'PPF Calculator', desc: '15-year tax-free Public Provident Fund.',
+                    assumptions: "Calculated assuming annual lump sum deposit made between April 1 - April 5 to fetch maximum interest. Current fixed rate is 7.1%.",
                     inputs: [
                         { id: 'amt', label: 'Yearly Investment', type: 'range', min: 500, max: 150000, step: 500, value: 150000, prefix: '₹' },
                         { id: 'yr', label: 'Time Period', type: 'range', min: 15, max: 50, step: 5, value: 15, suffix: 'Yr' }
@@ -312,13 +322,14 @@
                             bal += bal * rate; // Interest on full balance
                             inv += inp.amt; 
                         }
-                        return { primaryOutput: { label: 'Maturity Amount', value: bal }, secondaryOutputs: [ { label: 'Invested', value: inv }, { label: 'Tax-Free Interest', value: bal - inv } ], chart: { type: 'doughnut', labels: ['Invested', 'Interest'], data: [inv, Math.max(0, bal - inv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Calculated assuming annual lump sum deposit made between April 1 - April 5 to fetch maximum interest. Current fixed rate is 7.1%." };
+                        return { primaryOutput: { label: 'Maturity Amount', value: bal }, secondaryOutputs: [ { label: 'Invested', value: inv }, { label: 'Tax-Free Interest', value: bal - inv } ], chart: { type: 'doughnut', labels: ['Invested', 'Interest'], data: [inv, Math.max(0, bal - inv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
 
                 // --- 4. TAX CALCULATORS ---
                 'incometax': {
                     id: 'incometax', category: 'tax', title: 'Income Tax (New)', desc: 'Tax liability under New Regime (FY 2024-25 / AY 2025-26).',
+                    assumptions: "Uses updated New Regime slabs (Standard Deduction ₹75,000, Rebate up to ₹7L). Includes Marginal Relief and 4% Cess.",
                     inputs: [
                         { id: 'inc', label: 'Gross Annual Income', type: 'range', min: 300000, max: 50000000, step: 50000, value: 1200000, prefix: '₹' }
                     ],
@@ -346,11 +357,12 @@
                         
                         const totalTax = tax * 1.04; // 4% Health & Education Cess
                         
-                        return { primaryOutput: { label: 'Total Tax', value: totalTax }, secondaryOutputs: [ { label: 'Taxable Income', value: taxable }, { label: 'In-Hand Income', value: Math.max(0, inp.inc - totalTax) } ], chart: { type: 'pie', labels: ['In-Hand', 'Tax'], data: [Math.max(0, inp.inc - totalTax), totalTax], colors: ['#00b852', '#f87171'] }, assumptions: "Uses updated New Regime slabs (Standard Deduction ₹75,000, Rebate up to ₹7L). Includes Marginal Relief and 4% Cess." };
+                        return { primaryOutput: { label: 'Total Tax', value: totalTax }, secondaryOutputs: [ { label: 'Taxable Income', value: taxable }, { label: 'In-Hand Income', value: Math.max(0, inp.inc - totalTax) } ], chart: { type: 'pie', labels: ['In-Hand', 'Tax'], data: [Math.max(0, inp.inc - totalTax), totalTax], colors: ['#00b852', '#f87171'] } };
                     }
                 },
                 'oldvsnew': {
                     id: 'oldvsnew', category: 'tax', title: 'Old vs New Regime', desc: 'Compare tax liability under both regimes.',
+                    assumptions: "Old Std Ded: ₹50k, Rebate limit ₹5L. New Std Ded: ₹75k, Rebate limit ₹7L. Includes Marginal Relief and Cess.",
                     inputs: [
                         { id: 'inc', label: 'Gross Salary', type: 'range', min: 300000, max: 5000000, step: 50000, value: 1200000, prefix: '₹' },
                         { id: 'ded', label: 'Total Deductions (80C, 80D, HRA etc)', type: 'range', min: 0, max: 1000000, step: 10000, value: 200000, prefix: '₹' }
@@ -385,11 +397,12 @@
                         const diff = Math.abs(taxOld - taxNew);
                         const better = taxNew < taxOld ? 'New is Better' : (taxOld < taxNew ? 'Old is Better' : 'Both are Equal');
                         
-                        return { primaryOutput: { label: better + ' by', value: diff }, secondaryOutputs: [ { label: 'Tax Under New', value: taxNew }, { label: 'Tax Under Old', value: taxOld } ], chart: { type: 'pie', labels: ['New Regime Tax', 'Old Regime Tax'], data: [taxNew, taxOld], colors: ['#00b852', '#f87171'] }, assumptions: "Old Std Ded: ₹50k, Rebate limit ₹5L. New Std Ded: ₹75k, Rebate limit ₹7L. Includes Marginal Relief and Cess." };
+                        return { primaryOutput: { label: better + ' by', value: diff }, secondaryOutputs: [ { label: 'Tax Under New', value: taxNew }, { label: 'Tax Under Old', value: taxOld } ], chart: { type: 'pie', labels: ['New Regime Tax', 'Old Regime Tax'], data: [taxNew, taxOld], colors: ['#00b852', '#f87171'] } };
                     }
                 },
                 'gst': {
                     id: 'gst', category: 'tax', title: 'GST Calculator', desc: 'Calculate GST amount and total price.',
+                    assumptions: "Shows both Inclusive and Exclusive scenarios based on the input amount.",
                     inputs: [
                         { id: 'base', label: 'Amount', type: 'range', min: 100, max: 1000000, step: 100, value: 10000, prefix: '₹' },
                         { id: 'rate', label: 'GST Rate', type: 'range', min: 0, max: 28, step: 1, value: 18, suffix: '%' }
@@ -398,11 +411,12 @@
                         const gst = inp.base * (inp.rate / 100);
                         const total = inp.base + gst;
                         const exclusiveBase = inp.base / (1 + (inp.rate/100));
-                        return { primaryOutput: { label: 'Total (If Exclusive)', value: total }, secondaryOutputs: [ { label: 'GST Amount Added', value: gst }, { label: 'Base (If Amount was Inclusive)', value: exclusiveBase } ], chart: { type: 'pie', labels: ['Base Amount', 'GST'], data: [inp.base, gst], colors: ['#93c5fd', '#f87171'] }, assumptions: "Shows both Inclusive and Exclusive scenarios based on the input amount." };
+                        return { primaryOutput: { label: 'Total (If Exclusive)', value: total }, secondaryOutputs: [ { label: 'GST Amount Added', value: gst }, { label: 'Base (If Amount was Inclusive)', value: exclusiveBase } ], chart: { type: 'pie', labels: ['Base Amount', 'GST'], data: [inp.base, gst], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'hra': {
                     id: 'hra', category: 'tax', title: 'HRA Exemption', desc: 'Calculate Tax Exempt House Rent Allowance.',
+                    assumptions: "Exemption is minimum of: Actual HRA, Rent - 10% Basic, or 50% Basic (Metro)/40% Basic (Non-Metro).",
                     inputs: [
                         { id: 'basic', label: 'Basic Salary (Yearly)', type: 'range', min: 100000, max: 5000000, step: 10000, value: 600000, prefix: '₹' },
                         { id: 'hra', label: 'HRA Received (Yearly)', type: 'range', min: 10000, max: 2000000, step: 5000, value: 240000, prefix: '₹' },
@@ -414,13 +428,14 @@
                         const basicPercent = parseInt(inp.metro) === 1 ? (0.50 * inp.basic) : (0.40 * inp.basic);
                         const exempt = Math.max(0, Math.min(inp.hra, excessRent, basicPercent));
                         const taxable = Math.max(0, inp.hra - exempt);
-                        return { primaryOutput: { label: 'Exempt HRA', value: exempt }, secondaryOutputs: [ { label: 'Taxable HRA', value: taxable }, { label: 'Rent Excess of 10% Basic', value: excessRent } ], chart: { type: 'doughnut', labels: ['Exempt', 'Taxable'], data: [exempt, taxable], colors: ['#00b852', '#f87171'] }, assumptions: "Exemption is minimum of: Actual HRA, Rent - 10% Basic, or 50% Basic (Metro)/40% Basic (Non-Metro)." };
+                        return { primaryOutput: { label: 'Exempt HRA', value: exempt }, secondaryOutputs: [ { label: 'Taxable HRA', value: taxable }, { label: 'Rent Excess of 10% Basic', value: excessRent } ], chart: { type: 'doughnut', labels: ['Exempt', 'Taxable'], data: [exempt, taxable], colors: ['#00b852', '#f87171'] } };
                     }
                 },
 
                 // --- 5. RETIREMENT & GOALS ---
                 'retirement': {
                     id: 'retirement', category: 'retirement', title: 'Retirement Corpus', desc: 'Find out how much you need to retire comfortably.',
+                    assumptions: "Uses the 4% Safe Withdrawal Rate rule (Corpus = 25 * Annual Expenses at retirement).",
                     inputs: [
                         { id: 'curAge', label: 'Current Age', type: 'range', min: 18, max: 60, step: 1, value: 30, suffix: 'Yr' },
                         { id: 'retAge', label: 'Retirement Age', type: 'range', min: 40, max: 80, step: 1, value: 60, suffix: 'Yr' },
@@ -435,11 +450,12 @@
                         const futureMonthlyExp = inp.exp * Math.pow(1 + (inp.inf/100), yearsToRetire);
                         const annualReq = futureMonthlyExp * 12;
                         const corpus = annualReq * 25; 
-                        return { primaryOutput: { label: 'Required Corpus', value: corpus }, secondaryOutputs: [ { label: 'Years to Retire', value: yearsToRetire }, { label: 'Est. Monthly Exp at Ret.', value: futureMonthlyExp } ], chart: { type: 'doughnut', labels: ['Corpus Needed'], data: [corpus], colors: ['#00b852'] }, assumptions: "Uses the 4% Safe Withdrawal Rate rule (Corpus = 25 * Annual Expenses at retirement)." };
+                        return { primaryOutput: { label: 'Required Corpus', value: corpus }, secondaryOutputs: [ { label: 'Years to Retire', value: yearsToRetire }, { label: 'Est. Monthly Exp at Ret.', value: futureMonthlyExp } ], chart: { type: 'doughnut', labels: ['Corpus Needed'], data: [corpus], colors: ['#00b852'] } };
                     }
                 },
                 'nps': {
                     id: 'nps', category: 'retirement', title: 'NPS Calculator', desc: 'National Pension System wealth and annuity projection.',
+                    assumptions: "Retirement age fixed at 60. 40% of corpus must be used to purchase an annuity.",
                     inputs: [
                         { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 50000, step: 500, value: 5000, prefix: '₹' },
                         { id: 'curAge', label: 'Current Age', type: 'range', min: 18, max: 59, step: 1, value: 30, suffix: 'Yr' },
@@ -449,13 +465,14 @@
                         const years = 60 - inp.curAge; const P = inp.amt; const i = inp.ret / 12 / 100; const n = Math.max(0, years * 12);
                         const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
                         const annuity = FV * 0.40; const lumpsum = FV * 0.60;
-                        return { primaryOutput: { label: 'Total NPS Corpus', value: FV }, secondaryOutputs: [ { label: 'Lumpsum (60%)', value: lumpsum }, { label: 'Annuity Reinvested (40%)', value: annuity } ], chart: { type: 'pie', labels: ['Lumpsum', 'Annuity Value'], data: [lumpsum, annuity], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Retirement age fixed at 60. 40% of corpus must be used to purchase an annuity." };
+                        return { primaryOutput: { label: 'Total NPS Corpus', value: FV }, secondaryOutputs: [ { label: 'Lumpsum (60%)', value: lumpsum }, { label: 'Annuity Reinvested (40%)', value: annuity } ], chart: { type: 'pie', labels: ['Lumpsum', 'Annuity Value'], data: [lumpsum, annuity], colors: ['#93c5fd', '#f59e0b'] } };
                     }
                 },
 
                 // --- 6. STOCK MARKET ---
                 'cagr': {
                     id: 'cagr', category: 'stocks', title: 'CAGR Calculator', desc: 'Compound Annual Growth Rate of your investments.',
+                    assumptions: "Measures smoothed annual growth rate over the time period.",
                     inputs: [
                         { id: 'init', label: 'Initial Value', type: 'range', min: 1000, max: 1000000, step: 1000, value: 10000, prefix: '₹' },
                         { id: 'final', label: 'Final Value', type: 'range', min: 1000, max: 5000000, step: 1000, value: 20000, prefix: '₹' },
@@ -464,13 +481,14 @@
                     calculate: (inp) => {
                         const cagr = (Math.pow(inp.final / inp.init, 1 / inp.yr) - 1) * 100;
                         const profit = inp.final - inp.init;
-                        return { primaryOutput: { label: 'CAGR (%)', value: cagr }, secondaryOutputs: [ { label: 'Absolute Return', value: profit }, { label: 'Final Value', value: inp.final } ], chart: { type: 'doughnut', labels: ['Initial', 'Profit'], data: [inp.init, Math.max(0, profit)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Measures smoothed annual growth rate over the time period." };
+                        return { primaryOutput: { label: 'CAGR (%)', value: cagr }, secondaryOutputs: [ { label: 'Absolute Return', value: profit }, { label: 'Final Value', value: inp.final } ], chart: { type: 'doughnut', labels: ['Initial', 'Profit'], data: [inp.init, Math.max(0, profit)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
 
                 // --- 7. BUSINESS & FINANCE ---
                 'simpleint': {
                     id: 'simpleint', category: 'business', title: 'Simple Interest', desc: 'Basic interest calculation without compounding.',
+                    assumptions: "Interest is not added to the principal for future calculations.",
                     inputs: [
                         { id: 'p', label: 'Principal', type: 'range', min: 1000, max: 1000000, step: 1000, value: 100000, prefix: '₹' },
                         { id: 'r', label: 'Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 10, suffix: '%' },
@@ -478,32 +496,34 @@
                     ],
                     calculate: (inp) => {
                         const int = (inp.p * inp.r * inp.t) / 100;
-                        return { primaryOutput: { label: 'Total Amount', value: inp.p + int }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest', value: int } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [inp.p, int], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Interest is not added to the principal for future calculations." };
+                        return { primaryOutput: { label: 'Total Amount', value: inp.p + int }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest', value: int } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [inp.p, int], colors: ['#93c5fd', '#f59e0b'] } };
                     }
                 },
 
                 // --- 8. REAL ESTATE ---
                 'rental': {
                     id: 'rental', category: 'realestate', title: 'Rental Yield', desc: 'Calculate annual return on your property investment.',
+                    assumptions: "Gross yield. Does not account for maintenance, property tax, or empty periods.",
                     inputs: [
                         { id: 'val', label: 'Property Value', type: 'range', min: 1000000, max: 100000000, step: 500000, value: 10000000, prefix: '₹' },
                         { id: 'rent', label: 'Monthly Rent', type: 'range', min: 5000, max: 500000, step: 1000, value: 25000, prefix: '₹' }
                     ],
                     calculate: (inp) => {
                         const annualRent = inp.rent * 12; const yieldPercent = (annualRent / inp.val) * 100;
-                        return { primaryOutput: { label: 'Gross Rental Yield', value: yieldPercent }, secondaryOutputs: [ { label: 'Annual Rent', value: annualRent }, { label: 'Property Value', value: inp.val } ], chart: { type: 'doughnut', labels: ['Value', '1st Yr Rent'], data: [inp.val, annualRent], colors: ['#93c5fd', '#00b852'] }, assumptions: "Gross yield. Does not account for maintenance, property tax, or empty periods." };
+                        return { primaryOutput: { label: 'Gross Rental Yield', value: yieldPercent }, secondaryOutputs: [ { label: 'Annual Rent', value: annualRent }, { label: 'Property Value', value: inp.val } ], chart: { type: 'doughnut', labels: ['Value', '1st Yr Rent'], data: [inp.val, annualRent], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
 
                 // --- 9. DAILY UTILITY ---
                 'rule72': {
                     id: 'rule72', category: 'utility', title: 'Rule of 72', desc: 'Quickly find how long to double your money.',
+                    assumptions: "A widely used mathematical approximation for compound interest.",
                     inputs: [
                         { id: 'r', label: 'Interest Rate', type: 'range', min: 1, max: 40, step: 0.1, value: 8, suffix: '%' }
                     ],
                     calculate: (inp) => {
                         const years = 72 / inp.r;
-                        return { primaryOutput: { label: 'Years to Double', value: years }, secondaryOutputs: [ { label: 'Rate Used', value: inp.r } ], chart: { type: 'doughnut', labels: ['Rate'], data: [inp.r], colors: ['#00b852'] }, assumptions: "A widely used mathematical approximation for compound interest." };
+                        return { primaryOutput: { label: 'Years to Double', value: years }, secondaryOutputs: [ { label: 'Rate Used', value: inp.r } ], chart: { type: 'doughnut', labels: ['Rate'], data: [inp.r], colors: ['#00b852'] } };
                     }
                 }
             }
