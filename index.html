@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dhan Pilot - India Finance Hub</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00b852',
+                        primaryDark: '#009e46',
+                        darkBg: '#121212',
+                        darkCard: '#1e1e1e',
+                        darkBorder: '#333333'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        
+        /* Custom Range Slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 8px; outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e5e7eb; border-radius: 8px; }
+        .dark input[type=range]::-webkit-slider-runnable-track { background: #374151; }
+        input[type=range]::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: #00b852; cursor: pointer; -webkit-appearance: none; margin-top: -7px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 2px solid #fff; transition: transform 0.1s; }
+        .dark input[type=range]::-webkit-slider-thumb { border-color: #1e1e1e; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+        /* Number Input Hiding Arrows */
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100 transition-colors duration-200 min-h-screen flex flex-col">
+
+    <nav class="sticky top-0 z-50 bg-white dark:bg-darkCard border-b border-gray-200 dark:border-darkBorder shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center cursor-pointer" onclick="renderDashboard()">
+                    <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span class="ml-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Dhan Pilot</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                    <button class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden border-t border-gray-200 dark:border-darkBorder bg-white dark:bg-darkCard">
+            <div class="px-2 pt-2 pb-3 space-y-1 h-64 overflow-y-auto" id="mobileCategories"></div>
+        </div>
+    </nav>
+
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+        <aside class="hidden md:block w-64 flex-shrink-0">
+            <div class="sticky top-24 bg-white dark:bg-darkCard rounded-xl shadow-sm border border-gray-100 dark:border-darkBorder p-4 max-h-[80vh] overflow-y-auto">
+                <h3 class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-4">Categories</h3>
+                <nav class="space-y-1" id="desktopCategories"></nav>
+            </div>
+        </aside>
+
+        <main class="flex-1 w-full max-w-full min-w-0" id="mainContent"></main>
+    </div>
+
+    <footer class="bg-white dark:bg-darkCard border-t border-gray-200 dark:border-darkBorder mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                &copy; 2026 Dhan Pilot. All rights reserved.<br>
+                <span class="text-xs font-semibold mt-2 block text-gray-400">Disclaimer: Results are estimates only and should not be considered strict financial advice. Actual returns, taxes, and bank rules may vary.</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const formatINR = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Math.round(val));
+        let chartInstance = null;
+
+        const appData = {
+            categories: [
+                { id: 'loans', icon: '🏠', title: '1. Loans' },
+                { id: 'investments', icon: '📈', title: '2. Mutual Funds & Inv' },
+                { id: 'fixed', icon: '🏦', title: '3. Fixed Income' },
+                { id: 'tax', icon: '₹', title: '4. Tax Calculators' },
+                { id: 'retirement', icon: '👴', title: '5. Retirement & Goals' },
+                { id: 'stocks', icon: '📊', title: '6. Stock Market' },
+                { id: 'business', icon: '💼', title: '7. Business & Finance' },
+                { id: 'realestate', icon: '🏢', title: '8. Real Estate' },
+                { id: 'utility', icon: '🧮', title: '9. Daily Utility' },
+                { id: 'about', icon: 'ℹ️', title: 'About App' }
+            ],
+            calculators: {
+                // --- 1. LOANS ---
+                'homeloan': {
+                    id: 'homeloan', category: 'loans', title: 'Home Loan EMI', desc: 'Calculate Equated Monthly Installment for Home Loans.',
+                    inputs: [
+                        { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 50000000, step: 100000, value: 5000000, prefix: '₹' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 8.5, suffix: '%' },
+                        { id: 't', label: 'Tenure', type: 'range', min: 1, max: 30, step: 1, value: 20, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
+                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        const total = emi * n;
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "EMI calculated on reducing balance basis." };
+                    }
+                },
+                'carloan': {
+                    id: 'carloan', category: 'loans', title: 'Car Loan EMI', desc: 'Shorter tenure, different rate loan calculator.',
+                    inputs: [
+                        { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 50000, value: 800000, prefix: '₹' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 9.5, suffix: '%' },
+                        { id: 't', label: 'Tenure', type: 'range', min: 1, max: 7, step: 1, value: 5, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
+                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: (emi*n) - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, (emi*n) - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Standard reducing balance EMI." };
+                    }
+                },
+                'personalloan': {
+                    id: 'personalloan', category: 'loans', title: 'Personal Loan EMI', desc: 'Calculate EMI for short-term unsecured personal loans.',
+                    inputs: [
+                        { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 10000, value: 500000, prefix: '₹' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 14, suffix: '%' },
+                        { id: 't', label: 'Tenure', type: 'range', min: 1, max: 7, step: 1, value: 3, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
+                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        const total = emi * n;
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Standard reducing balance EMI calculation." };
+                    }
+                },
+                'eduloan': {
+                    id: 'eduloan', category: 'loans', title: 'Education Loan EMI', desc: 'Calculate EMI for educational loans.',
+                    inputs: [
+                        { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 20000000, step: 50000, value: 1500000, prefix: '₹' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 20, step: 0.1, value: 9.5, suffix: '%' },
+                        { id: 't', label: 'Tenure', type: 'range', min: 1, max: 15, step: 1, value: 7, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
+                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        const total = emi * n;
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] }, assumptions: "Assumes EMI starts immediately. Does not account for moratorium periods." };
+                    }
+                },
+
+                // --- 2. INVESTMENTS & MF ---
+                'sip': {
+                    id: 'sip', category: 'investments', title: 'SIP Calculator', desc: 'Calculate returns on monthly mutual fund investments.',
+                    inputs: [
+                        { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
+                        { id: 'rate', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'yr', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.amt; const i = inp.rate / 12 / 100; const n = inp.yr * 12;
+                        const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                        const invested = P * n;
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: invested }, { label: 'Est. Returns', value: FV - invested } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounding monthly at the beginning of each month." };
+                    }
+                },
+                'stepupsip': {
+                    id: 'stepupsip', category: 'investments', title: 'Step-up SIP', desc: 'Increase your SIP amount every year.',
+                    inputs: [
+                        { id: 'amt', label: 'Starting Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
+                        { id: 'step', label: 'Annual Step-up', type: 'range', min: 1, max: 50, step: 1, value: 10, suffix: '%' },
+                        { id: 'rate', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'yr', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        let mInv = inp.amt; let totalInv = 0; let FV = 0; const mRate = inp.rate/12/100;
+                        for(let y=1; y<=inp.yr; y++) {
+                            for(let m=1; m<=12; m++) { 
+                                FV += mInv;             // Add new SIP
+                                FV += FV * mRate;       // Monthly compounding
+                                totalInv += mInv; 
+                            }
+                            mInv += mInv * (inp.step/100); // Step up occurs at year end
+                        }
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: totalInv }, { label: 'Est. Returns', value: FV - totalInv } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [totalInv, Math.max(0, FV - totalInv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Calculates monthly compounding. Investment increases annually by the step-up percentage." };
+                    }
+                },
+                'lumpsum': {
+                    id: 'lumpsum', category: 'investments', title: 'Lumpsum Calculator', desc: 'Calculate returns for a one-time mutual fund investment.',
+                    inputs: [
+                        { id: 'p', label: 'Total Investment', type: 'range', min: 1000, max: 10000000, step: 1000, value: 100000, prefix: '₹' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const A = inp.p * Math.pow(1 + (inp.r / 100), inp.t);
+                        return { primaryOutput: { label: 'Estimated Wealth', value: A }, secondaryOutputs: [ { label: 'Invested Amount', value: inp.p }, { label: 'Est. Returns', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounded annually." };
+                    }
+                },
+                'swp': {
+                    id: 'swp', category: 'investments', title: 'SWP Calculator', desc: 'Systematic Withdrawal Plan: Withdraw a fixed amount monthly.',
+                    inputs: [
+                        { id: 'p', label: 'Total Investment', type: 'range', min: 100000, max: 50000000, step: 50000, value: 5000000, prefix: '₹' },
+                        { id: 'w', label: 'Monthly Withdrawal', type: 'range', min: 1000, max: 500000, step: 1000, value: 25000, prefix: '₹' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 10, suffix: '%' },
+                        { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        let balance = inp.p; const monthlyRate = inp.r / 12 / 100; const months = inp.t * 12; let totalWithdrawn = 0;
+                        for(let i=0; i<months; i++) {
+                            balance += balance * monthlyRate; // Growth happens first
+                            if(balance >= inp.w) { 
+                                balance -= inp.w; 
+                                totalWithdrawn += inp.w; 
+                            } 
+                            else { 
+                                totalWithdrawn += balance; 
+                                balance = 0; 
+                                break; 
+                            }
+                        }
+                        return { primaryOutput: { label: 'Final Balance', value: balance }, secondaryOutputs: [ { label: 'Total Invested', value: inp.p }, { label: 'Total Withdrawn', value: totalWithdrawn } ], chart: { type: 'doughnut', labels: ['Final Balance', 'Total Withdrawn'], data: [balance, totalWithdrawn], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Assumes withdrawals are made at the end of each month after applying growth." };
+                    }
+                },
+                'goalsip': {
+                    id: 'goalsip', category: 'investments', title: 'Goal SIP', desc: 'Find out how much to invest monthly to reach a target.',
+                    inputs: [
+                        { id: 'fv', label: 'Target Amount', type: 'range', min: 100000, max: 100000000, step: 100000, value: 10000000, prefix: '₹' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const i = inp.r / 12 / 100; const n = inp.t * 12; let sip = 0;
+                        if(i > 0 && n > 0) sip = inp.fv / ( ((Math.pow(1+i, n) - 1)/i) * (1+i) );
+                        const totalInv = sip * n;
+                        return { primaryOutput: { label: 'Required Monthly SIP', value: sip }, secondaryOutputs: [ { label: 'Target Amount', value: inp.fv }, { label: 'Total Investment', value: totalInv } ], chart: { type: 'doughnut', labels: ['Total Investment', 'Est. Returns'], data: [totalInv, Math.max(0, inp.fv - totalInv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Compounding monthly at the beginning of each month." };
+                    }
+                },
+                'xirr': {
+                    id: 'xirr', category: 'investments', title: 'SIP Return Estimator', desc: 'Estimate the annualized return rate of your ongoing SIP.',
+                    inputs: [
+                        { id: 'sip', label: 'Monthly Investment', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
+                        { id: 't', label: 'Months Invested', type: 'range', min: 6, max: 360, step: 1, value: 60, suffix: 'Mo' },
+                        { id: 'val', label: 'Current Value', type: 'range', min: 5000, max: 50000000, step: 5000, value: 450000, prefix: '₹' }
+                    ],
+                    calculate: (inp) => {
+                        const P = inp.sip; const n = inp.t; const FV = inp.val;
+                        let low = 0.0; let high = 100.0; let xirr = 0; let iter = 0;
+                        while(low <= high && iter < 100) {
+                            let mid = (low + high) / 2; let i = mid / 12 / 100; let calcFV = 0;
+                            if(i === 0) calcFV = P * n; else calcFV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                            if(Math.abs(calcFV - FV) < 1) { xirr = mid; break; }
+                            if(calcFV > FV) high = mid; else low = mid;
+                            iter++; xirr = mid;
+                        }
+                        const invested = P * n;
+                        return { primaryOutput: { label: 'Est. Annual Return', value: xirr }, secondaryOutputs: [ { label: 'Total Invested', value: invested }, { label: 'Absolute Profit', value: Math.max(0, FV - invested) } ], chart: { type: 'doughnut', labels: ['Invested', 'Profit'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] }, assumptions: "A binary search approximation of IRR assuming consistent regular monthly investments." };
+                    }
+                },
+
+                // --- 3. FIXED INCOME ---
+                'fd': {
+                    id: 'fd', category: 'fixed', title: 'FD Calculator', desc: 'Bank Fixed Deposit with quarterly compounding.',
+                    inputs: [
+                        { id: 'p', label: 'Total Investment', type: 'range', min: 5000, max: 10000000, step: 5000, value: 100000, prefix: '₹' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 15, step: 0.1, value: 7.0, suffix: '%' },
+                        { id: 't', label: 'Time Period', type: 'range', min: 1, max: 20, step: 1, value: 5, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const A = inp.p * Math.pow(1 + (inp.r/400), 4*inp.t);
+                        return { primaryOutput: { label: 'Maturity Amount', value: A }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest Earned', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Principal', 'Interest'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Indian FDs standardly compound quarterly." };
+                    }
+                },
+                'ppf': {
+                    id: 'ppf', category: 'fixed', title: 'PPF Calculator', desc: '15-year tax-free Public Provident Fund.',
+                    inputs: [
+                        { id: 'amt', label: 'Yearly Investment', type: 'range', min: 500, max: 150000, step: 500, value: 150000, prefix: '₹' },
+                        { id: 'yr', label: 'Time Period', type: 'range', min: 15, max: 50, step: 5, value: 15, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        let bal = 0; let inv = 0; const rate = 7.1 / 100;
+                        for(let i=0; i<inp.yr; i++) { 
+                            bal += inp.amt; // Invested at start of year
+                            bal += bal * rate; // Interest on full balance
+                            inv += inp.amt; 
+                        }
+                        return { primaryOutput: { label: 'Maturity Amount', value: bal }, secondaryOutputs: [ { label: 'Invested', value: inv }, { label: 'Tax-Free Interest', value: bal - inv } ], chart: { type: 'doughnut', labels: ['Invested', 'Interest'], data: [inv, Math.max(0, bal - inv)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Calculated assuming annual lump sum deposit made between April 1 - April 5 to fetch maximum interest. Current fixed rate is 7.1%." };
+                    }
+                },
+
+                // --- 4. TAX CALCULATORS ---
+                'incometax': {
+                    id: 'incometax', category: 'tax', title: 'Income Tax (New)', desc: 'Tax liability under New Regime (FY 2024-25 / AY 2025-26).',
+                    inputs: [
+                        { id: 'inc', label: 'Gross Annual Income', type: 'range', min: 300000, max: 50000000, step: 50000, value: 1200000, prefix: '₹' }
+                    ],
+                    calculate: (inp) => {
+                        const stdDed = 75000; 
+                        let taxable = Math.max(0, inp.inc - stdDed); 
+                        let tax = 0;
+                        
+                        if(taxable > 1500000) tax = (taxable - 1500000)*0.30 + 150000;
+                        else if(taxable > 1200000) tax = (taxable - 1200000)*0.20 + 90000;
+                        else if(taxable > 1000000) tax = (taxable - 1000000)*0.15 + 60000;
+                        else if(taxable > 700000) tax = (taxable - 700000)*0.10 + 20000;
+                        else if(taxable > 300000) tax = (taxable - 300000)*0.05;
+                        
+                        // Rebate 87A & Marginal Relief handling for New Regime
+                        if(taxable <= 700000) {
+                            tax = 0; 
+                        } else {
+                            // Marginal relief: extra tax cannot exceed extra income over 7L
+                            let extraIncome = taxable - 700000;
+                            if (tax > extraIncome) {
+                                tax = extraIncome;
+                            }
+                        }
+                        
+                        const totalTax = tax * 1.04; // 4% Health & Education Cess
+                        
+                        return { primaryOutput: { label: 'Total Tax', value: totalTax }, secondaryOutputs: [ { label: 'Taxable Income', value: taxable }, { label: 'In-Hand Income', value: Math.max(0, inp.inc - totalTax) } ], chart: { type: 'pie', labels: ['In-Hand', 'Tax'], data: [Math.max(0, inp.inc - totalTax), totalTax], colors: ['#00b852', '#f87171'] }, assumptions: "Uses updated New Regime slabs (Standard Deduction ₹75,000, Rebate up to ₹7L). Includes Marginal Relief and 4% Cess." };
+                    }
+                },
+                'oldvsnew': {
+                    id: 'oldvsnew', category: 'tax', title: 'Old vs New Regime', desc: 'Compare tax liability under both regimes.',
+                    inputs: [
+                        { id: 'inc', label: 'Gross Salary', type: 'range', min: 300000, max: 5000000, step: 50000, value: 1200000, prefix: '₹' },
+                        { id: 'ded', label: 'Total Deductions (80C, 80D, HRA etc)', type: 'range', min: 0, max: 1000000, step: 10000, value: 200000, prefix: '₹' }
+                    ],
+                    calculate: (inp) => {
+                        // NEW REGIME
+                        let taxableNew = Math.max(0, inp.inc - 75000); 
+                        let taxNew = 0;
+                        if(taxableNew > 1500000) taxNew = (taxableNew - 1500000)*0.30 + 150000;
+                        else if(taxableNew > 1200000) taxNew = (taxableNew - 1200000)*0.20 + 90000;
+                        else if(taxableNew > 1000000) taxNew = (taxableNew - 1000000)*0.15 + 60000;
+                        else if(taxableNew > 700000) taxNew = (taxableNew - 700000)*0.10 + 20000;
+                        else if(taxableNew > 300000) taxNew = (taxableNew - 300000)*0.05;
+                        
+                        if(taxableNew <= 700000) taxNew = 0;
+                        else {
+                            let extraIncome = taxableNew - 700000;
+                            if (taxNew > extraIncome) taxNew = extraIncome;
+                        }
+                        taxNew *= 1.04;
+
+                        // OLD REGIME
+                        let taxableOld = Math.max(0, inp.inc - 50000 - inp.ded); 
+                        let taxOld = 0;
+                        if(taxableOld > 1000000) taxOld = (taxableOld - 1000000)*0.30 + 112500;
+                        else if(taxableOld > 500000) taxOld = (taxableOld - 500000)*0.20 + 12500;
+                        else if(taxableOld > 250000) taxOld = (taxableOld - 250000)*0.05;
+                        
+                        if(taxableOld <= 500000) taxOld = 0; // Rebate limit 5L
+                        taxOld *= 1.04;
+
+                        const diff = Math.abs(taxOld - taxNew);
+                        const better = taxNew < taxOld ? 'New is Better' : (taxOld < taxNew ? 'Old is Better' : 'Both are Equal');
+                        
+                        return { primaryOutput: { label: better + ' by', value: diff }, secondaryOutputs: [ { label: 'Tax Under New', value: taxNew }, { label: 'Tax Under Old', value: taxOld } ], chart: { type: 'pie', labels: ['New Regime Tax', 'Old Regime Tax'], data: [taxNew, taxOld], colors: ['#00b852', '#f87171'] }, assumptions: "Old Std Ded: ₹50k, Rebate limit ₹5L. New Std Ded: ₹75k, Rebate limit ₹7L. Includes Marginal Relief and Cess." };
+                    }
+                },
+                'gst': {
+                    id: 'gst', category: 'tax', title: 'GST Calculator', desc: 'Calculate GST amount and total price.',
+                    inputs: [
+                        { id: 'base', label: 'Amount', type: 'range', min: 100, max: 1000000, step: 100, value: 10000, prefix: '₹' },
+                        { id: 'rate', label: 'GST Rate', type: 'range', min: 0, max: 28, step: 1, value: 18, suffix: '%' }
+                    ],
+                    calculate: (inp) => {
+                        const gst = inp.base * (inp.rate / 100);
+                        const total = inp.base + gst;
+                        const exclusiveBase = inp.base / (1 + (inp.rate/100));
+                        return { primaryOutput: { label: 'Total (If Exclusive)', value: total }, secondaryOutputs: [ { label: 'GST Amount Added', value: gst }, { label: 'Base (If Amount was Inclusive)', value: exclusiveBase } ], chart: { type: 'pie', labels: ['Base Amount', 'GST'], data: [inp.base, gst], colors: ['#93c5fd', '#f87171'] }, assumptions: "Shows both Inclusive and Exclusive scenarios based on the input amount." };
+                    }
+                },
+                'hra': {
+                    id: 'hra', category: 'tax', title: 'HRA Exemption', desc: 'Calculate Tax Exempt House Rent Allowance.',
+                    inputs: [
+                        { id: 'basic', label: 'Basic Salary (Yearly)', type: 'range', min: 100000, max: 5000000, step: 10000, value: 600000, prefix: '₹' },
+                        { id: 'hra', label: 'HRA Received (Yearly)', type: 'range', min: 10000, max: 2000000, step: 5000, value: 240000, prefix: '₹' },
+                        { id: 'rent', label: 'Rent Paid (Yearly)', type: 'range', min: 10000, max: 2000000, step: 5000, value: 300000, prefix: '₹' },
+                        { id: 'metro', label: 'Metro City?', type: 'select', options: [{label: 'Yes', value: 1}, {label: 'No', value: 0}], value: 1 }
+                    ],
+                    calculate: (inp) => {
+                        const excessRent = Math.max(0, inp.rent - (0.10 * inp.basic));
+                        const basicPercent = parseInt(inp.metro) === 1 ? (0.50 * inp.basic) : (0.40 * inp.basic);
+                        const exempt = Math.max(0, Math.min(inp.hra, excessRent, basicPercent));
+                        const taxable = Math.max(0, inp.hra - exempt);
+                        return { primaryOutput: { label: 'Exempt HRA', value: exempt }, secondaryOutputs: [ { label: 'Taxable HRA', value: taxable }, { label: 'Rent Excess of 10% Basic', value: excessRent } ], chart: { type: 'doughnut', labels: ['Exempt', 'Taxable'], data: [exempt, taxable], colors: ['#00b852', '#f87171'] }, assumptions: "Exemption is minimum of: Actual HRA, Rent - 10% Basic, or 50% Basic (Metro)/40% Basic (Non-Metro)." };
+                    }
+                },
+
+                // --- 5. RETIREMENT & GOALS ---
+                'retirement': {
+                    id: 'retirement', category: 'retirement', title: 'Retirement Corpus', desc: 'Find out how much you need to retire comfortably.',
+                    inputs: [
+                        { id: 'curAge', label: 'Current Age', type: 'range', min: 18, max: 60, step: 1, value: 30, suffix: 'Yr' },
+                        { id: 'retAge', label: 'Retirement Age', type: 'range', min: 40, max: 80, step: 1, value: 60, suffix: 'Yr' },
+                        { id: 'exp', label: 'Current Monthly Exp', type: 'range', min: 10000, max: 500000, step: 5000, value: 50000, prefix: '₹' },
+                        { id: 'inf', label: 'Expected Inflation', type: 'range', min: 1, max: 15, step: 0.1, value: 6, suffix: '%' }
+                    ],
+                    calculate: (inp) => {
+                        if (inp.retAge <= inp.curAge) {
+                            return { error: "Retirement Age must be greater than Current Age." };
+                        }
+                        const yearsToRetire = inp.retAge - inp.curAge;
+                        const futureMonthlyExp = inp.exp * Math.pow(1 + (inp.inf/100), yearsToRetire);
+                        const annualReq = futureMonthlyExp * 12;
+                        const corpus = annualReq * 25; 
+                        return { primaryOutput: { label: 'Required Corpus', value: corpus }, secondaryOutputs: [ { label: 'Years to Retire', value: yearsToRetire }, { label: 'Est. Monthly Exp at Ret.', value: futureMonthlyExp } ], chart: { type: 'doughnut', labels: ['Corpus Needed'], data: [corpus], colors: ['#00b852'] }, assumptions: "Uses the 4% Safe Withdrawal Rate rule (Corpus = 25 * Annual Expenses at retirement)." };
+                    }
+                },
+                'nps': {
+                    id: 'nps', category: 'retirement', title: 'NPS Calculator', desc: 'National Pension System wealth and annuity projection.',
+                    inputs: [
+                        { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 50000, step: 500, value: 5000, prefix: '₹' },
+                        { id: 'curAge', label: 'Current Age', type: 'range', min: 18, max: 59, step: 1, value: 30, suffix: 'Yr' },
+                        { id: 'ret', label: 'Expected Return', type: 'range', min: 5, max: 20, step: 0.1, value: 10, suffix: '%' }
+                    ],
+                    calculate: (inp) => {
+                        const years = 60 - inp.curAge; const P = inp.amt; const i = inp.ret / 12 / 100; const n = Math.max(0, years * 12);
+                        const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                        const annuity = FV * 0.40; const lumpsum = FV * 0.60;
+                        return { primaryOutput: { label: 'Total NPS Corpus', value: FV }, secondaryOutputs: [ { label: 'Lumpsum (60%)', value: lumpsum }, { label: 'Annuity Reinvested (40%)', value: annuity } ], chart: { type: 'pie', labels: ['Lumpsum', 'Annuity Value'], data: [lumpsum, annuity], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Retirement age fixed at 60. 40% of corpus must be used to purchase an annuity." };
+                    }
+                },
+
+                // --- 6. STOCK MARKET ---
+                'cagr': {
+                    id: 'cagr', category: 'stocks', title: 'CAGR Calculator', desc: 'Compound Annual Growth Rate of your investments.',
+                    inputs: [
+                        { id: 'init', label: 'Initial Value', type: 'range', min: 1000, max: 1000000, step: 1000, value: 10000, prefix: '₹' },
+                        { id: 'final', label: 'Final Value', type: 'range', min: 1000, max: 5000000, step: 1000, value: 20000, prefix: '₹' },
+                        { id: 'yr', label: 'Years', type: 'range', min: 1, max: 40, step: 1, value: 3, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const cagr = (Math.pow(inp.final / inp.init, 1 / inp.yr) - 1) * 100;
+                        const profit = inp.final - inp.init;
+                        return { primaryOutput: { label: 'CAGR (%)', value: cagr }, secondaryOutputs: [ { label: 'Absolute Return', value: profit }, { label: 'Final Value', value: inp.final } ], chart: { type: 'doughnut', labels: ['Initial', 'Profit'], data: [inp.init, Math.max(0, profit)], colors: ['#93c5fd', '#00b852'] }, assumptions: "Measures smoothed annual growth rate over the time period." };
+                    }
+                },
+
+                // --- 7. BUSINESS & FINANCE ---
+                'simpleint': {
+                    id: 'simpleint', category: 'business', title: 'Simple Interest', desc: 'Basic interest calculation without compounding.',
+                    inputs: [
+                        { id: 'p', label: 'Principal', type: 'range', min: 1000, max: 1000000, step: 1000, value: 100000, prefix: '₹' },
+                        { id: 'r', label: 'Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 10, suffix: '%' },
+                        { id: 't', label: 'Time', type: 'range', min: 1, max: 40, step: 1, value: 5, suffix: 'Yr' }
+                    ],
+                    calculate: (inp) => {
+                        const int = (inp.p * inp.r * inp.t) / 100;
+                        return { primaryOutput: { label: 'Total Amount', value: inp.p + int }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest', value: int } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [inp.p, int], colors: ['#93c5fd', '#f59e0b'] }, assumptions: "Interest is not added to the principal for future calculations." };
+                    }
+                },
+
+                // --- 8. REAL ESTATE ---
+                'rental': {
+                    id: 'rental', category: 'realestate', title: 'Rental Yield', desc: 'Calculate annual return on your property investment.',
+                    inputs: [
+                        { id: 'val', label: 'Property Value', type: 'range', min: 1000000, max: 100000000, step: 500000, value: 10000000, prefix: '₹' },
+                        { id: 'rent', label: 'Monthly Rent', type: 'range', min: 5000, max: 500000, step: 1000, value: 25000, prefix: '₹' }
+                    ],
+                    calculate: (inp) => {
+                        const annualRent = inp.rent * 12; const yieldPercent = (annualRent / inp.val) * 100;
+                        return { primaryOutput: { label: 'Gross Rental Yield', value: yieldPercent }, secondaryOutputs: [ { label: 'Annual Rent', value: annualRent }, { label: 'Property Value', value: inp.val } ], chart: { type: 'doughnut', labels: ['Value', '1st Yr Rent'], data: [inp.val, annualRent], colors: ['#93c5fd', '#00b852'] }, assumptions: "Gross yield. Does not account for maintenance, property tax, or empty periods." };
+                    }
+                },
+
+                // --- 9. DAILY UTILITY ---
+                'rule72': {
+                    id: 'rule72', category: 'utility', title: 'Rule of 72', desc: 'Quickly find how long to double your money.',
+                    inputs: [
+                        { id: 'r', label: 'Interest Rate', type: 'range', min: 1, max: 40, step: 0.1, value: 8, suffix: '%' }
+                    ],
+                    calculate: (inp) => {
+                        const years = 72 / inp.r;
+                        return { primaryOutput: { label: 'Years to Double', value: years }, secondaryOutputs: [ { label: 'Rate Used', value: inp.r } ], chart: { type: 'doughnut', labels: ['Rate'], data: [inp.r], colors: ['#00b852'] }, assumptions: "A widely used mathematical approximation for compound interest." };
+                    }
+                }
+            }
+        };
+
+        let currentActiveCalc = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme(); 
+            renderNavigation(); 
+            
+            // Check Local Storage for last opened calculator
+            const lastCalc = localStorage.getItem('lastCalc');
+            if (lastCalc && appData.calculators[lastCalc]) {
+                renderCalculator(lastCalc);
+            } else {
+                renderDashboard();
+            }
+        });
+
+        function initTheme() {
+            const toggleBtn = document.getElementById('themeToggle');
+            const root = document.documentElement;
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                root.classList.add('dark');
+            } else { root.classList.remove('dark'); }
+
+            toggleBtn.addEventListener('click', () => {
+                root.classList.toggle('dark');
+                localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+                if(currentActiveCalc && appData.calculators[currentActiveCalc]) {
+                    renderCalculator(currentActiveCalc, false); // re-render without resetting inputs
+                }
+            });
+        }
+
+        function renderNavigation() {
+            const desktopNav = document.getElementById('desktopCategories');
+            const mobileNav = document.getElementById('mobileCategories');
+            let navHtml = `<button onclick="renderDashboard()" class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-primary bg-green-50 dark:bg-gray-800 mb-2">🏠 All Tools</button>`;
+            
+            appData.categories.forEach(cat => {
+                navHtml += `<button onclick="filterCategory('${cat.id}')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-3">
+                        <span>${cat.icon}</span> ${cat.title}
+                    </button>`;
+            });
+
+            desktopNav.innerHTML = navHtml; mobileNav.innerHTML = navHtml;
+        }
+
+        function renderDashboard(filterCat = null) {
+            currentActiveCalc = null;
+            localStorage.removeItem('lastCalc');
+            const main = document.getElementById('mainContent');
+
+            if (filterCat === 'about') {
+                renderAboutPage();
+                document.getElementById('mobileMenu').classList.add('hidden');
+                return;
+            }
+            
+            let html = `
+                <div class="mb-8 animate-[fadeIn_0.3s_ease-in-out]">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dhan Pilot</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">Your comprehensive suite for Indian financial calculations.</p>
+                    
+                    <div class="relative max-w-2xl">
+                        <input type="text" id="searchBar" onkeyup="searchDashboard(this.value)" placeholder="Search calculators (e.g. SIP, EMI, GST)..." class="w-full bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-shadow shadow-sm">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="dashboardCategories">
+            `;
+
+            appData.categories.forEach(cat => {
+                if (cat.id === 'about') return;
+                if (filterCat && filterCat !== cat.id) return;
+                
+                const catCalcs = Object.values(appData.calculators).filter(c => c.category === cat.id);
+                if (catCalcs.length === 0) return;
+
+                html += `
+                    <div class="mb-8 category-section" data-cat="${cat.id}">
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2 border-b border-gray-200 dark:border-darkBorder pb-2">
+                            ${cat.icon} ${cat.title}
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                `;
+
+                catCalcs.forEach(calc => {
+                    html += `
+                        <div onclick="renderCalculator('${calc.id}')" class="calc-card bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-primary dark:hover:border-primary transition-all group" data-title="${calc.title.toLowerCase()}" data-desc="${calc.desc.toLowerCase()}">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">${calc.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">${calc.desc}</p>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+            html += `</div>`;
+            main.innerHTML = html;
+        }
+
+        function renderAboutPage() {
+            const main = document.getElementById('mainContent');
+            main.innerHTML = `
+                <div class="mb-4 flex items-center gap-2 text-sm text-gray-500 cursor-pointer hover:text-primary transition-colors" onclick="renderDashboard()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Back
+                </div>
+                <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-2xl p-8 max-w-2xl text-center mx-auto shadow-sm mt-8">
+                    <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dhan Pilot</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">Version 1.0.0 (MVP)</p>
+                    
+                    <div class="text-left space-y-4 text-gray-700 dark:text-gray-300">
+                        <p>Welcome to Dhan Pilot! Designed specifically for the Indian market, this app brings together the most essential personal finance, taxation, and investment calculators into one lightning-fast, beautiful interface.</p>
+                        <p>Calculations happen entirely on your device. We do not track or send your financial data anywhere.</p>
+                        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl mt-6">
+                            <p class="text-sm font-semibold mb-1">Contact & Support</p>
+                            <p class="text-sm text-gray-500">gokulgems20@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function searchDashboard(query) {
+            query = query.toLowerCase();
+            const sections = document.querySelectorAll('.category-section');
+            
+            sections.forEach(sec => {
+                let hasVisibleCard = false;
+                const cards = sec.querySelectorAll('.calc-card');
+                
+                cards.forEach(card => {
+                    const title = card.getAttribute('data-title');
+                    const desc = card.getAttribute('data-desc');
+                    if (title.includes(query) || desc.includes(query)) {
+                        card.style.display = 'block';
+                        hasVisibleCard = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                sec.style.display = hasVisibleCard ? 'block' : 'none';
+            });
+        }
+
+        function filterCategory(catId) {
+            renderDashboard(catId);
+            document.getElementById('mobileMenu').classList.add('hidden');
+        }
+
+        function renderCalculator(calcId, resetInputs = true) {
+            currentActiveCalc = calcId;
+            localStorage.setItem('lastCalc', calcId);
+            const calc = appData.calculators[calcId];
+            const main = document.getElementById('mainContent');
+
+            // Retrieve saved input values from LocalStorage if resetting
+            let savedValues = {};
+            if (resetInputs) {
+                try {
+                    savedValues = JSON.parse(localStorage.getItem('calcData_' + calcId)) || {};
+                } catch(e) {}
+            }
+
+            let inputsHtml = '';
+            calc.inputs.forEach(inp => {
+                // Apply saved value if it exists, otherwise default
+                let currentVal = savedValues[inp.id] !== undefined ? savedValues[inp.id] : inp.value;
+
+                if (inp.type === 'select') {
+                    inputsHtml += `
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">${inp.label}</label>
+                            </div>
+                            <select id="select_${inp.id}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-darkBorder text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary p-2.5 font-semibold transition-colors outline-none cursor-pointer">
+                                ${inp.options.map(opt => `<option value="${opt.value}" ${opt.value == currentVal ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    inputsHtml += `
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">${inp.label}</label>
+                                <div class="relative w-32">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">${inp.prefix || ''}</span>
+                                    <input type="number" id="num_${inp.id}" value="${currentVal}" min="${inp.min}" max="${inp.max}" step="${inp.step}" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-darkBorder text-gray-900 dark:text-white rounded-lg focus:ring-primary focus:border-primary block p-2 font-semibold text-right pr-8 outline-none transition-colors">
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">${inp.suffix || ''}</span>
+                                </div>
+                            </div>
+                            <input type="range" id="range_${inp.id}" min="${inp.min}" max="${inp.max}" step="${inp.step}" value="${currentVal}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+                        </div>
+                    `;
+                }
+            });
+
+            main.innerHTML = `
+                <div class="mb-4 flex items-center gap-2 text-sm text-gray-500 cursor-pointer hover:text-primary transition-colors w-max" onclick="renderDashboard()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    Back to Tools
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">${calc.title}</h1>
+                <p class="text-gray-500 dark:text-gray-400 mb-8">${calc.desc}</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-7 bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-2xl p-6 shadow-sm">
+                        ${inputsHtml}
+                    </div>
+                    <div class="lg:col-span-5 flex flex-col gap-6">
+                        <div class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-2xl p-6 shadow-sm min-h-[200px]">
+                            <div id="resultsContent"></div>
+                        </div>
+                        <div id="chartContainerCard" class="bg-white dark:bg-darkCard border border-gray-200 dark:border-darkBorder rounded-2xl p-6 shadow-sm flex justify-center">
+                            <div class="relative w-full aspect-square max-h-64"><canvas id="resultChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900 rounded-xl p-4">
+                    <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">Assumptions & Note</h4>
+                    <p class="text-sm text-blue-600 dark:text-blue-400">${calc.assumptions}</p>
+                </div>
+            `;
+
+            calc.inputs.forEach(inp => {
+                if (inp.type === 'select') {
+                    const sel = document.getElementById(`select_${inp.id}`);
+                    sel.addEventListener('change', () => triggerCalculation(calc));
+                } else {
+                    const range = document.getElementById(`range_${inp.id}`);
+                    const num = document.getElementById(`num_${inp.id}`);
+                    
+                    // Live update visually
+                    range.addEventListener('input', (e) => { 
+                        num.value = e.target.value; 
+                        triggerCalculation(calc); 
+                    });
+                    
+                    // Strict Clamp on Change
+                    num.addEventListener('change', (e) => {
+                        let val = parseFloat(e.target.value) || 0;
+                        if (val < inp.min) val = inp.min;
+                        if (val > inp.max) val = inp.max;
+                        e.target.value = val;
+                        range.value = val;
+                        triggerCalculation(calc);
+                    });
+
+                    // Live update (typing)
+                    num.addEventListener('input', (e) => {
+                        let val = parseFloat(e.target.value);
+                        if (!isNaN(val) && val >= inp.min && val <= inp.max) {
+                            range.value = val;
+                        }
+                        triggerCalculation(calc);
+                    });
+                }
+            });
+            triggerCalculation(calc);
+        }
+
+        function triggerCalculation(calc) {
+            let inputVals = {};
+            calc.inputs.forEach(inp => { 
+                if (inp.type === 'select') {
+                    inputVals[inp.id] = parseFloat(document.getElementById(`select_${inp.id}`).value) || 0;
+                } else {
+                    inputVals[inp.id] = parseFloat(document.getElementById(`num_${inp.id}`).value) || 0; 
+                }
+            });
+            
+            // Save current state to local storage
+            localStorage.setItem('calcData_' + calc.id, JSON.stringify(inputVals));
+
+            const result = calc.calculate(inputVals);
+            const resContainer = document.getElementById('resultsContent');
+            const chartCard = document.getElementById('chartContainerCard');
+
+            // Handle logical validation errors (e.g. Retirement)
+            if (result.error) {
+                resContainer.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-center p-4">
+                        <div class="text-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg w-full border border-red-200 dark:border-red-800">
+                            <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p class="font-medium">${result.error}</p>
+                        </div>
+                    </div>
+                `;
+                chartCard.style.display = 'none';
+                if(chartInstance) chartInstance.destroy();
+                return;
+            }
+
+            chartCard.style.display = 'flex';
+
+            // Formatting
+            const isPercent = calc.id === 'cagr' || calc.id === 'rental' || calc.id === 'xirr';
+            const isYears = calc.id === 'rule72';
+            
+            const formatVal = (v) => {
+                if (isPercent) return v.toFixed(2) + '%';
+                if (isYears) return v.toFixed(1) + ' Yrs';
+                return formatINR(v);
+            };
+
+            let resHtml = `
+                <div class="text-center mb-6">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">${result.primaryOutput.label}</p>
+                    <p class="text-4xl font-bold text-gray-900 dark:text-white">${formatVal(result.primaryOutput.value)}</p>
+                </div>
+                <div class="space-y-4">
+            `;
+            result.secondaryOutputs.forEach(so => {
+                const labelStr = so.label.toLowerCase();
+                const forceNonCurr = labelStr.includes('year') || labelStr.includes('rate');
+                resHtml += `
+                    <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-2">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">${so.label}</span>
+                        <span class="font-semibold text-gray-900 dark:text-white">${forceNonCurr ? so.value.toFixed(1) : formatINR(so.value)}</span>
+                    </div>
+                `;
+            });
+            resHtml += `</div>`;
+            resContainer.innerHTML = resHtml;
+            renderChart(result.chart);
+        }
+
+        function renderChart(chartData) {
+            const canvas = document.getElementById('resultChart');
+            if(!canvas) return; // Loading safety
+            
+            const ctx = canvas.getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: chartData.type,
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.data,
+                        backgroundColor: chartData.colors,
+                        borderWidth: isDark ? 2 : 0,
+                        borderColor: isDark ? '#1e1e1e' : '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: isDark ? '#9ca3af' : '#4b5563', usePointStyle: true, padding: 20 } }
+                    },
+                    cutout: chartData.type === 'doughnut' ? '70%' : undefined
+                }
+            });
+        }
+    </script>
+</body>
+</html>
