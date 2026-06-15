@@ -52,6 +52,9 @@
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
     </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00b852">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-darkBg dark:text-gray-100 transition-colors duration-200 min-h-screen flex flex-col">
 
@@ -921,5 +924,18 @@
             });
         }
     </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(registration) {
+        console.log('ServiceWorker registered');
+      })
+      .catch(function(error) {
+        console.log('ServiceWorker registration failed:', error);
+      });
+  });
+}
+</script>
 </body>
 </html>
