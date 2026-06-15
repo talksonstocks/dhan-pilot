@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dhan Pilot - India Finance Hub</title>
+    <meta name="description" content="Fincalzy - Your comprehensive suite for Indian financial, tax, and investment calculations.">
+    <title>Fincalzy - India Finance Hub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -61,10 +62,10 @@
                     <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
-                    <span class="ml-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Dhan Pilot</span>
+                    <span class="ml-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Fincalzy</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle Dark Mode">
                         <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     </button>
@@ -93,11 +94,8 @@
     <footer class="bg-white dark:bg-darkCard border-t border-gray-200 dark:border-darkBorder mt-auto">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm text-gray-500 dark:text-gray-400">
-                &copy; 2026 Dhan Pilot. All rights reserved.<br>
+                &copy; 2026 Fincalzy. All rights reserved.<br>
                 <span class="text-xs font-semibold mt-2 block text-gray-400">Disclaimer: Results are estimates only and should not be considered strict financial advice. Actual returns, taxes, and bank rules may vary.</span>
-           <br><br>
-<a href="privacy-policy.html">Privacy Policy</a> |
-<a href="terms-and-conditions.html">Terms & Conditions</a>
             </p>
         </div>
     </footer>
@@ -106,7 +104,6 @@
         const formatINR = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Math.round(val));
         let chartInstance = null;
 
-        // BUG FIX: The `assumptions` text has been moved from the inner `calculate()` return object to the root calculator object so `${calc.assumptions}` correctly resolves.
         const appData = {
             categories: [
                 { id: 'loans', icon: '🏠', title: '1. Loans' },
@@ -127,14 +124,16 @@
                     assumptions: "EMI calculated on reducing balance basis.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 50000000, step: 100000, value: 5000000, prefix: '₹' },
-                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 8.5, suffix: '%' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 0, max: 25, step: 0.1, value: 8.5, suffix: '%' },
                         { id: 't', label: 'Tenure', type: 'range', min: 1, max: 30, step: 1, value: 20, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
-                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        let emi = 0;
+                        if (r === 0) emi = P / n;
+                        else emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: Math.max(0, total - P) } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, Math.max(0, total - P)], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'carloan': {
@@ -142,13 +141,15 @@
                     assumptions: "Standard reducing balance EMI.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 50000, value: 800000, prefix: '₹' },
-                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 25, step: 0.1, value: 9.5, suffix: '%' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 0, max: 25, step: 0.1, value: 9.5, suffix: '%' },
                         { id: 't', label: 'Tenure', type: 'range', min: 1, max: 7, step: 1, value: 5, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
-                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: (emi*n) - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, (emi*n) - P], colors: ['#93c5fd', '#f87171'] } };
+                        let emi = 0;
+                        if (r === 0) emi = P / n;
+                        else emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: Math.max(0, (emi*n) - P) } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, Math.max(0, (emi*n) - P)], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'personalloan': {
@@ -156,14 +157,16 @@
                     assumptions: "Standard reducing balance EMI calculation.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 50000, max: 5000000, step: 10000, value: 500000, prefix: '₹' },
-                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 14, suffix: '%' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 0, max: 35, step: 0.1, value: 14, suffix: '%' },
                         { id: 't', label: 'Tenure', type: 'range', min: 1, max: 7, step: 1, value: 3, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
-                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        let emi = 0;
+                        if (r === 0) emi = P / n;
+                        else emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: Math.max(0, total - P) } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, Math.max(0, total - P)], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
                 'eduloan': {
@@ -171,14 +174,16 @@
                     assumptions: "Assumes EMI starts immediately. Does not account for moratorium periods.",
                     inputs: [
                         { id: 'p', label: 'Loan Amount', type: 'range', min: 100000, max: 20000000, step: 50000, value: 1500000, prefix: '₹' },
-                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 1, max: 20, step: 0.1, value: 9.5, suffix: '%' },
+                        { id: 'r', label: 'Interest Rate (p.a)', type: 'range', min: 0, max: 20, step: 0.1, value: 9.5, suffix: '%' },
                         { id: 't', label: 'Tenure', type: 'range', min: 1, max: 15, step: 1, value: 7, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const P = inp.p; const r = inp.r / 12 / 100; const n = inp.t * 12;
-                        const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+                        let emi = 0;
+                        if (r === 0) emi = P / n;
+                        else emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                         const total = emi * n;
-                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: total - P } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, total - P], colors: ['#93c5fd', '#f87171'] } };
+                        return { primaryOutput: { label: 'Monthly EMI', value: emi }, secondaryOutputs: [ { label: 'Principal', value: P }, { label: 'Total Interest', value: Math.max(0, total - P) } ], chart: { type: 'pie', labels: ['Principal', 'Interest'], data: [P, Math.max(0, total - P)], colors: ['#93c5fd', '#f87171'] } };
                     }
                 },
 
@@ -188,23 +193,25 @@
                     assumptions: "Compounding monthly at the beginning of each month.",
                     inputs: [
                         { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
-                        { id: 'rate', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'rate', label: 'Expected Return', type: 'range', min: 0, max: 35, step: 0.1, value: 12, suffix: '%' },
                         { id: 'yr', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const P = inp.amt; const i = inp.rate / 12 / 100; const n = inp.yr * 12;
-                        const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                        let FV = 0;
+                        if (i === 0) FV = P * n;
+                        else FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
                         const invested = P * n;
-                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: invested }, { label: 'Est. Returns', value: FV - invested } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] } };
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: invested }, { label: 'Est. Returns', value: Math.max(0, FV - invested) } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'stepupsip': {
                     id: 'stepupsip', category: 'investments', title: 'Step-up SIP', desc: 'Increase your SIP amount every year.',
-                    assumptions: "Calculates monthly compounding. Investment increases annually by the step-up percentage.",
+                    assumptions: "Calculates monthly compounding. Investment step-up is strictly applied at the end of each 12-month cycle.",
                     inputs: [
                         { id: 'amt', label: 'Starting Monthly Inv', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
-                        { id: 'step', label: 'Annual Step-up', type: 'range', min: 1, max: 50, step: 1, value: 10, suffix: '%' },
-                        { id: 'rate', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'step', label: 'Annual Step-up', type: 'range', min: 0, max: 50, step: 1, value: 10, suffix: '%' },
+                        { id: 'rate', label: 'Expected Return', type: 'range', min: 0, max: 35, step: 0.1, value: 12, suffix: '%' },
                         { id: 'yr', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
@@ -215,9 +222,9 @@
                                 FV += FV * mRate;       // Monthly compounding
                                 totalInv += mInv; 
                             }
-                            mInv += mInv * (inp.step/100); // Step up occurs at year end
+                            mInv += mInv * (inp.step/100); // Step up happens for next year
                         }
-                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: totalInv }, { label: 'Est. Returns', value: FV - totalInv } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [totalInv, Math.max(0, FV - totalInv)], colors: ['#93c5fd', '#00b852'] } };
+                        return { primaryOutput: { label: 'Total Wealth', value: FV }, secondaryOutputs: [ { label: 'Invested', value: totalInv }, { label: 'Est. Returns', value: Math.max(0, FV - totalInv) } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [totalInv, Math.max(0, FV - totalInv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'lumpsum': {
@@ -225,12 +232,12 @@
                     assumptions: "Compounded annually.",
                     inputs: [
                         { id: 'p', label: 'Total Investment', type: 'range', min: 1000, max: 10000000, step: 1000, value: 100000, prefix: '₹' },
-                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 0, max: 35, step: 0.1, value: 12, suffix: '%' },
                         { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const A = inp.p * Math.pow(1 + (inp.r / 100), inp.t);
-                        return { primaryOutput: { label: 'Estimated Wealth', value: A }, secondaryOutputs: [ { label: 'Invested Amount', value: inp.p }, { label: 'Est. Returns', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
+                        return { primaryOutput: { label: 'Estimated Wealth', value: A }, secondaryOutputs: [ { label: 'Invested Amount', value: inp.p }, { label: 'Est. Returns', value: Math.max(0, A - inp.p) } ], chart: { type: 'doughnut', labels: ['Invested', 'Returns'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'swp': {
@@ -239,7 +246,7 @@
                     inputs: [
                         { id: 'p', label: 'Total Investment', type: 'range', min: 100000, max: 50000000, step: 50000, value: 5000000, prefix: '₹' },
                         { id: 'w', label: 'Monthly Withdrawal', type: 'range', min: 1000, max: 500000, step: 1000, value: 25000, prefix: '₹' },
-                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 10, suffix: '%' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 0, max: 35, step: 0.1, value: 10, suffix: '%' },
                         { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
@@ -264,36 +271,40 @@
                     assumptions: "Compounding monthly at the beginning of each month.",
                     inputs: [
                         { id: 'fv', label: 'Target Amount', type: 'range', min: 100000, max: 100000000, step: 100000, value: 10000000, prefix: '₹' },
-                        { id: 'r', label: 'Expected Return', type: 'range', min: 1, max: 35, step: 0.1, value: 12, suffix: '%' },
+                        { id: 'r', label: 'Expected Return', type: 'range', min: 0, max: 35, step: 0.1, value: 12, suffix: '%' },
                         { id: 't', label: 'Time Period', type: 'range', min: 1, max: 40, step: 1, value: 10, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
                         const i = inp.r / 12 / 100; const n = inp.t * 12; let sip = 0;
                         if(i > 0 && n > 0) sip = inp.fv / ( ((Math.pow(1+i, n) - 1)/i) * (1+i) );
+                        else if (i === 0 && n > 0) sip = inp.fv / n;
                         const totalInv = sip * n;
                         return { primaryOutput: { label: 'Required Monthly SIP', value: sip }, secondaryOutputs: [ { label: 'Target Amount', value: inp.fv }, { label: 'Total Investment', value: totalInv } ], chart: { type: 'doughnut', labels: ['Total Investment', 'Est. Returns'], data: [totalInv, Math.max(0, inp.fv - totalInv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'xirr': {
                     id: 'xirr', category: 'investments', title: 'SIP Return Estimator', desc: 'Estimate the annualized return rate of your ongoing SIP.',
-                    assumptions: "A binary search approximation of IRR assuming consistent regular monthly investments.",
+                    assumptions: "A binary search approximation of IRR assuming consistent regular monthly investments. Handles both profit and loss scenarios.",
                     inputs: [
                         { id: 'sip', label: 'Monthly Investment', type: 'range', min: 500, max: 200000, step: 500, value: 5000, prefix: '₹' },
                         { id: 't', label: 'Months Invested', type: 'range', min: 6, max: 360, step: 1, value: 60, suffix: 'Mo' },
-                        { id: 'val', label: 'Current Value', type: 'range', min: 5000, max: 50000000, step: 5000, value: 450000, prefix: '₹' }
+                        { id: 'val', label: 'Current Value', type: 'range', min: 1000, max: 50000000, step: 1000, value: 450000, prefix: '₹' }
                     ],
                     calculate: (inp) => {
                         const P = inp.sip; const n = inp.t; const FV = inp.val;
-                        let low = 0.0; let high = 100.0; let xirr = 0; let iter = 0;
+                        let low = -99.0; let high = 100.0; let xirr = 0; let iter = 0; // Extended lower bound for losses
                         while(low <= high && iter < 100) {
                             let mid = (low + high) / 2; let i = mid / 12 / 100; let calcFV = 0;
-                            if(i === 0) calcFV = P * n; else calcFV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                            if(Math.abs(i) < 0.00001) calcFV = P * n; 
+                            else calcFV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                            
                             if(Math.abs(calcFV - FV) < 1) { xirr = mid; break; }
                             if(calcFV > FV) high = mid; else low = mid;
                             iter++; xirr = mid;
                         }
                         const invested = P * n;
-                        return { primaryOutput: { label: 'Est. Annual Return', value: xirr }, secondaryOutputs: [ { label: 'Total Invested', value: invested }, { label: 'Absolute Profit', value: Math.max(0, FV - invested) } ], chart: { type: 'doughnut', labels: ['Invested', 'Profit'], data: [invested, Math.max(0, FV - invested)], colors: ['#93c5fd', '#00b852'] } };
+                        const absoluteProfit = FV - invested;
+                        return { primaryOutput: { label: 'Est. Annual Return', value: xirr }, secondaryOutputs: [ { label: 'Total Invested', value: invested }, { label: absoluteProfit >= 0 ? 'Absolute Profit' : 'Absolute Loss', value: Math.abs(absoluteProfit) } ], chart: { type: 'doughnut', labels: ['Invested', 'Current Value'], data: [invested, FV], colors: ['#93c5fd', absoluteProfit >= 0 ? '#00b852' : '#f87171'] } };
                     }
                 },
 
@@ -308,31 +319,32 @@
                     ],
                     calculate: (inp) => {
                         const A = inp.p * Math.pow(1 + (inp.r/400), 4*inp.t);
-                        return { primaryOutput: { label: 'Maturity Amount', value: A }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest Earned', value: A - inp.p } ], chart: { type: 'doughnut', labels: ['Principal', 'Interest'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
+                        return { primaryOutput: { label: 'Maturity Amount', value: A }, secondaryOutputs: [ { label: 'Principal', value: inp.p }, { label: 'Interest Earned', value: Math.max(0, A - inp.p) } ], chart: { type: 'doughnut', labels: ['Principal', 'Interest'], data: [inp.p, Math.max(0, A - inp.p)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
                 'ppf': {
                     id: 'ppf', category: 'fixed', title: 'PPF Calculator', desc: '15-year tax-free Public Provident Fund.',
-                    assumptions: "Calculated assuming annual lump sum deposit made between April 1 - April 5 to fetch maximum interest. Current fixed rate is 7.1%.",
+                    assumptions: "Calculated assuming annual lump sum deposit made between April 1 - April 5 to fetch maximum interest. Current fixed rate is 7.1%. Strict ₹1.5L annual limit enforced.",
                     inputs: [
                         { id: 'amt', label: 'Yearly Investment', type: 'range', min: 500, max: 150000, step: 500, value: 150000, prefix: '₹' },
                         { id: 'yr', label: 'Time Period', type: 'range', min: 15, max: 50, step: 5, value: 15, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
+                        let deposit = inp.amt > 150000 ? 150000 : inp.amt; // Clamp strict govt limit
                         let bal = 0; let inv = 0; const rate = 7.1 / 100;
                         for(let i=0; i<inp.yr; i++) { 
-                            bal += inp.amt; // Invested at start of year
+                            bal += deposit; // Invested at start of year
                             bal += bal * rate; // Interest on full balance
-                            inv += inp.amt; 
+                            inv += deposit; 
                         }
-                        return { primaryOutput: { label: 'Maturity Amount', value: bal }, secondaryOutputs: [ { label: 'Invested', value: inv }, { label: 'Tax-Free Interest', value: bal - inv } ], chart: { type: 'doughnut', labels: ['Invested', 'Interest'], data: [inv, Math.max(0, bal - inv)], colors: ['#93c5fd', '#00b852'] } };
+                        return { primaryOutput: { label: 'Maturity Amount', value: bal }, secondaryOutputs: [ { label: 'Invested', value: inv }, { label: 'Tax-Free Interest', value: Math.max(0, bal - inv) } ], chart: { type: 'doughnut', labels: ['Invested', 'Interest'], data: [inv, Math.max(0, bal - inv)], colors: ['#93c5fd', '#00b852'] } };
                     }
                 },
 
                 // --- 4. TAX CALCULATORS ---
                 'incometax': {
-                    id: 'incometax', category: 'tax', title: 'Income Tax (New)', desc: 'Tax liability under New Regime (FY 2024-25 / AY 2025-26).',
-                    assumptions: "Uses updated New Regime slabs (Standard Deduction ₹75,000, Rebate up to ₹7L). Includes Marginal Relief and 4% Cess.",
+                    id: 'incometax', category: 'tax', title: 'Income Tax (New)', desc: 'Tax liability under New Regime (FY 2025-26 / AY 2026-27).',
+                    assumptions: "Uses latest New Regime slabs (Standard Deduction ₹75,000, Sec 87A Rebate ₹60,000). Includes correct Marginal Relief and 4% Cess.",
                     inputs: [
                         { id: 'inc', label: 'Gross Annual Income', type: 'range', min: 300000, max: 50000000, step: 50000, value: 1200000, prefix: '₹' }
                     ],
@@ -341,18 +353,20 @@
                         let taxable = Math.max(0, inp.inc - stdDed); 
                         let tax = 0;
                         
-                        if(taxable > 1500000) tax = (taxable - 1500000)*0.30 + 150000;
-                        else if(taxable > 1200000) tax = (taxable - 1200000)*0.20 + 90000;
-                        else if(taxable > 1000000) tax = (taxable - 1000000)*0.15 + 60000;
-                        else if(taxable > 700000) tax = (taxable - 700000)*0.10 + 20000;
-                        else if(taxable > 300000) tax = (taxable - 300000)*0.05;
+                        // FY 25-26 New Slabs calculation
+                        if (taxable > 2400000) tax = (taxable - 2400000) * 0.30 + 300000;
+                        else if (taxable > 2000000) tax = (taxable - 2000000) * 0.25 + 200000;
+                        else if (taxable > 1600000) tax = (taxable - 1600000) * 0.20 + 120000;
+                        else if (taxable > 1200000) tax = (taxable - 1200000) * 0.15 + 60000;
+                        else if (taxable > 800000) tax = (taxable - 800000) * 0.10 + 20000;
+                        else if (taxable > 400000) tax = (taxable - 400000) * 0.05;
                         
-                        // Rebate 87A & Marginal Relief handling for New Regime
-                        if(taxable <= 700000) {
+                        // Section 87A Rebate & Marginal Relief
+                        if (taxable <= 1200000) {
                             tax = 0; 
                         } else {
-                            // Marginal relief: extra tax cannot exceed extra income over 7L
-                            let extraIncome = taxable - 700000;
+                            // Marginal relief: extra tax cannot exceed extra income over 12L
+                            let extraIncome = taxable - 1200000;
                             if (tax > extraIncome) {
                                 tax = extraIncome;
                             }
@@ -364,25 +378,26 @@
                     }
                 },
                 'oldvsnew': {
-                    id: 'oldvsnew', category: 'tax', title: 'Old vs New Regime', desc: 'Compare tax liability under both regimes.',
-                    assumptions: "Old Std Ded: ₹50k, Rebate limit ₹5L. New Std Ded: ₹75k, Rebate limit ₹7L. Includes Marginal Relief and Cess.",
+                    id: 'oldvsnew', category: 'tax', title: 'Old vs New Regime', desc: 'Compare tax liability under both regimes (FY 2025-26).',
+                    assumptions: "Old Std Ded: ₹50k, Rebate limit ₹5L. New Std Ded: ₹75k, Rebate limit ₹12L (Tax-free up to ₹12.75L Gross). Includes Marginal Relief and Cess.",
                     inputs: [
                         { id: 'inc', label: 'Gross Salary', type: 'range', min: 300000, max: 5000000, step: 50000, value: 1200000, prefix: '₹' },
                         { id: 'ded', label: 'Total Deductions (80C, 80D, HRA etc)', type: 'range', min: 0, max: 1000000, step: 10000, value: 200000, prefix: '₹' }
                     ],
                     calculate: (inp) => {
-                        // NEW REGIME
+                        // NEW REGIME (FY 25-26 Slabs)
                         let taxableNew = Math.max(0, inp.inc - 75000); 
                         let taxNew = 0;
-                        if(taxableNew > 1500000) taxNew = (taxableNew - 1500000)*0.30 + 150000;
-                        else if(taxableNew > 1200000) taxNew = (taxableNew - 1200000)*0.20 + 90000;
-                        else if(taxableNew > 1000000) taxNew = (taxableNew - 1000000)*0.15 + 60000;
-                        else if(taxableNew > 700000) taxNew = (taxableNew - 700000)*0.10 + 20000;
-                        else if(taxableNew > 300000) taxNew = (taxableNew - 300000)*0.05;
+                        if (taxableNew > 2400000) taxNew = (taxableNew - 2400000) * 0.30 + 300000;
+                        else if (taxableNew > 2000000) taxNew = (taxableNew - 2000000) * 0.25 + 200000;
+                        else if (taxableNew > 1600000) taxNew = (taxableNew - 1600000) * 0.20 + 120000;
+                        else if (taxableNew > 1200000) taxNew = (taxableNew - 1200000) * 0.15 + 60000;
+                        else if (taxableNew > 800000) taxNew = (taxableNew - 800000) * 0.10 + 20000;
+                        else if (taxableNew > 400000) taxNew = (taxableNew - 400000) * 0.05;
                         
-                        if(taxableNew <= 700000) taxNew = 0;
+                        if(taxableNew <= 1200000) taxNew = 0;
                         else {
-                            let extraIncome = taxableNew - 700000;
+                            let extraIncome = taxableNew - 1200000;
                             if (taxNew > extraIncome) taxNew = extraIncome;
                         }
                         taxNew *= 1.04;
@@ -462,11 +477,13 @@
                     inputs: [
                         { id: 'amt', label: 'Monthly Inv', type: 'range', min: 500, max: 50000, step: 500, value: 5000, prefix: '₹' },
                         { id: 'curAge', label: 'Current Age', type: 'range', min: 18, max: 59, step: 1, value: 30, suffix: 'Yr' },
-                        { id: 'ret', label: 'Expected Return', type: 'range', min: 5, max: 20, step: 0.1, value: 10, suffix: '%' }
+                        { id: 'ret', label: 'Expected Return', type: 'range', min: 0, max: 20, step: 0.1, value: 10, suffix: '%' }
                     ],
                     calculate: (inp) => {
                         const years = 60 - inp.curAge; const P = inp.amt; const i = inp.ret / 12 / 100; const n = Math.max(0, years * 12);
-                        const FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+                        let FV = 0;
+                        if (i === 0) FV = P * n;
+                        else FV = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
                         const annuity = FV * 0.40; const lumpsum = FV * 0.60;
                         return { primaryOutput: { label: 'Total NPS Corpus', value: FV }, secondaryOutputs: [ { label: 'Lumpsum (60%)', value: lumpsum }, { label: 'Annuity Reinvested (40%)', value: annuity } ], chart: { type: 'pie', labels: ['Lumpsum', 'Annuity Value'], data: [lumpsum, annuity], colors: ['#93c5fd', '#f59e0b'] } };
                     }
@@ -494,7 +511,7 @@
                     assumptions: "Interest is not added to the principal for future calculations.",
                     inputs: [
                         { id: 'p', label: 'Principal', type: 'range', min: 1000, max: 1000000, step: 1000, value: 100000, prefix: '₹' },
-                        { id: 'r', label: 'Rate (p.a)', type: 'range', min: 1, max: 35, step: 0.1, value: 10, suffix: '%' },
+                        { id: 'r', label: 'Rate (p.a)', type: 'range', min: 0, max: 35, step: 0.1, value: 10, suffix: '%' },
                         { id: 't', label: 'Time', type: 'range', min: 1, max: 40, step: 1, value: 5, suffix: 'Yr' }
                     ],
                     calculate: (inp) => {
@@ -525,7 +542,9 @@
                         { id: 'r', label: 'Interest Rate', type: 'range', min: 1, max: 40, step: 0.1, value: 8, suffix: '%' }
                     ],
                     calculate: (inp) => {
-                        const years = 72 / inp.r;
+                        let years = 0;
+                        if(inp.r === 0) years = 0;
+                        else years = 72 / inp.r;
                         return { primaryOutput: { label: 'Years to Double', value: years }, secondaryOutputs: [ { label: 'Rate Used', value: inp.r } ], chart: { type: 'doughnut', labels: ['Rate'], data: [inp.r], colors: ['#00b852'] } };
                     }
                 }
@@ -590,7 +609,7 @@
             
             let html = `
                 <div class="mb-8 animate-[fadeIn_0.3s_ease-in-out]">
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dhan Pilot</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Fincalzy</h1>
                     <p class="text-gray-500 dark:text-gray-400 mb-6">Your comprehensive suite for Indian financial calculations.</p>
                     
                     <div class="relative max-w-2xl">
@@ -642,15 +661,15 @@
                     <svg class="w-16 h-16 text-primary mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dhan Pilot</h1>
-                    <p class="text-gray-500 dark:text-gray-400 mb-6">Version 1.0.0 (MVP)</p>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Fincalzy</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">Version 1.1.0</p>
                     
                     <div class="text-left space-y-4 text-gray-700 dark:text-gray-300">
-                        <p>Welcome to Dhan Pilot! Designed specifically for the Indian market, this app brings together the most essential personal finance, taxation, and investment calculators into one lightning-fast, beautiful interface.</p>
+                        <p>Welcome to Fincalzy! Designed specifically for the Indian market, this app brings together the most essential personal finance, taxation, and investment calculators into one lightning-fast, beautiful interface.</p>
                         <p>Calculations happen entirely on your device. We do not track or send your financial data anywhere.</p>
                         <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl mt-6">
                             <p class="text-sm font-semibold mb-1">Contact & Support</p>
-                            <p class="text-sm text-gray-500">gokulgems20@gmail.com</p>
+                            <p class="text-sm text-gray-500">fincalzy@gmail.com</p>
                         </div>
                     </div>
                 </div>
