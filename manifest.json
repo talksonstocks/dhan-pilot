@@ -2,7 +2,7 @@
   "name": "Fincalzy",
   "short_name": "Fincalzy",
   "description": "Indian Financial Calculator App with SIP, EMI, FD, PPF, Tax and Investment Calculators.",
-  "start_url": "./",
+  "start_url": "/fincalzy/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#00b852",
